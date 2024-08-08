@@ -45,7 +45,7 @@
         async function startCamera() {
             const videoConstraints = {
                 video: {
-                    facingMode: { exact: "environment" }
+                    facingMode: "environment" // Use back camera
                 }
             };
             try {
@@ -60,7 +60,8 @@
                 document.getElementById('qr-reader').appendChild(videoElement);
                 videoElement.play();
 
-                const html5QrCode = new Html5Qrcode(videoElement);
+                // Initialize html5-qrcode
+                const html5QrCode = new Html5Qrcode("qr-reader");
                 const qrConfig = { fps: 10, qrbox: 250 };
 
                 const onScanSuccess = (decodedText, decodedResult) => {
@@ -77,7 +78,10 @@
                     qrConfig,
                     onScanSuccess,
                     onScanFailure
-                );
+                ).catch(err => {
+                    console.error('Error starting html5-qrcode', err);
+                });
+
             } catch (error) {
                 console.error('Error accessing the camera', error);
             }
