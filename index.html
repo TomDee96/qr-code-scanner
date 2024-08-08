@@ -44,46 +44,25 @@
     <script>
         async function startCamera() {
             const videoConstraints = {
-                video: {
-                    facingMode: "environment" // Use back camera
-                }
+                facingMode: { exact: "environment" } // Use back camera
             };
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+            const onScanSuccess = (decodedText, decodedResult) => {
+                console.log(`Code matched = ${decodedText}`, decodedResult);
+                alert(`Code matched: ${decodedText}`);
+                window.location.href = decodedText; // Automatically load the QR code URL
+            };
+
+            const onScanFailure = error => {
+                console.warn(`Code scan error = ${error}`);
+            };
+
             try {
-                const stream = await navigator.mediaDevices.getUserMedia(videoConstraints);
-                const videoElement = document.createElement('video');
-                videoElement.setAttribute('autoplay', '');
-                videoElement.setAttribute('playsinline', '');
-                videoElement.style.width = '100%';
-                videoElement.style.height = '100%';
-                videoElement.style.objectFit = 'cover';
-                videoElement.srcObject = stream;
-                document.getElementById('qr-reader').appendChild(videoElement);
-                videoElement.play();
-
-                // Initialize html5-qrcode
                 const html5QrCode = new Html5Qrcode("qr-reader");
-                const qrConfig = { fps: 10, qrbox: 250 };
-
-                const onScanSuccess = (decodedText, decodedResult) => {
-                    console.log(`Code matched = ${decodedText}`, decodedResult);
-                    window.location.href = decodedText; // Automatically load the QR code URL
-                };
-
-                const onScanFailure = error => {
-                    console.warn(`Code scan error = ${error}`);
-                };
-
-                html5QrCode.start(
-                    { facingMode: "environment" },
-                    qrConfig,
-                    onScanSuccess,
-                    onScanFailure
-                ).catch(err => {
-                    console.error('Error starting html5-qrcode', err);
-                });
-
+                await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure);
             } catch (error) {
-                console.error('Error accessing the camera', error);
+                console.error('Error starting QR scanner', error);
             }
         }
 
@@ -93,6 +72,7 @@
     </script>
 </body>
 </html>
+
 
 
 
