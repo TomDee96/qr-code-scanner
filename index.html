@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Scanner</title>
-    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qr-scanner/qr-scanner.min.js"></script>
     <style>
         body, html {
             margin: 0;
@@ -15,14 +15,14 @@
             align-items: center;
             background-color: #000;
         }
-        #qr-reader {
+        #qr-video {
             width: 100%;
             height: 100%;
-            position: relative;
+            object-fit: cover;
         }
         #qr-frame {
             position: absolute;
-            border: 2px solid #00FF00;
+            border: 6px solid #00FF00;
             width: 250px;
             height: 250px;
             top: 50%;
@@ -30,40 +30,25 @@
             transform: translate(-50%, -50%);
             box-sizing: border-box;
         }
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
     </style>
 </head>
 <body>
     <div id="qr-reader">
+        <video id="qr-video" autoplay playsinline></video>
         <div id="qr-frame"></div>
     </div>
     <script>
         async function startCamera() {
-            const videoConstraints = {
-                facingMode: { exact: "environment" } // Use back camera
-            };
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-
-            const onScanSuccess = (decodedText, decodedResult) => {
-                console.log(`Code matched = ${decodedText}`, decodedResult);
-                alert(`Code matched: ${decodedText}`);
-                window.location.href = decodedText; // Automatically load the QR code URL
-            };
-
-            const onScanFailure = error => {
-                console.warn(`Code scan error = ${error}`);
-            };
-
-            try {
-                const html5QrCode = new Html5Qrcode("qr-reader");
-                await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure);
-            } catch (error) {
-                console.error('Error starting QR scanner', error);
-            }
+            const video = document.getElementById('qr-video');
+            const qrScanner = new QrScanner(video, result => {
+                console.log(result);
+                alert(`QR Code matched: ${result}`);
+                window.location.href = result; // Automatically load the QR code URL
+            }, {
+                highlightScanRegion: true,
+                highlightCodeOutline: true,
+            });
+            await qrScanner.start();
         }
 
         document.addEventListener('DOMContentLoaded', (event) => {
@@ -72,6 +57,7 @@
     </script>
 </body>
 </html>
+
 
 
 
