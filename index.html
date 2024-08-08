@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Device Camera</title>
+    <title>QR Code Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <style>
         body, html {
             margin: 0;
@@ -22,23 +23,56 @@
     </style>
 </head>
 <body>
-    <video id="video" autoplay playsinline></video>
-
+    <div id="qr-reader" style="width:100%;"></div>
     <script>
         async function startCamera() {
+            const videoConstraints = {
+                video: {
+                    facingMode: { exact: "environment" }
+                }
+            };
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                const videoElement = document.getElementById('video');
+                const stream = await navigator.mediaDevices.getUserMedia(videoConstraints);
+                const videoElement = document.createElement('video');
+                videoElement.setAttribute('autoplay', '');
+                videoElement.setAttribute('playsinline', '');
+                videoElement.style.width = '100%';
+                videoElement.style.height = '100%';
+                videoElement.style.objectFit = 'cover';
                 videoElement.srcObject = stream;
+                document.getElementById('qr-reader').appendChild(videoElement);
+                videoElement.play();
+
+                const html5QrCode = new Html5Qrcode(videoElement);
+                const qrConfig = { fps: 10, qrbox: 250 };
+
+                const onScanSuccess = (decodedText, decodedResult) => {
+                    console.log(`Code matched = ${decodedText}`, decodedResult);
+                    alert(`Code matched: ${decodedText}`);
+                };
+
+                const onScanFailure = error => {
+                    console.warn(`Code scan error = ${error}`);
+                };
+
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    qrConfig,
+                    onScanSuccess,
+                    onScanFailure
+                );
             } catch (error) {
                 console.error('Error accessing the camera', error);
             }
         }
 
-        startCamera();
+        document.addEventListener('DOMContentLoaded', (event) => {
+            startCamera();
+        });
     </script>
 </body>
 </html>
+
 
 
 
